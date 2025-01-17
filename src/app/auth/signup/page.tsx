@@ -6,11 +6,12 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FirebaseError } from 'firebase/app';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,34 +27,10 @@ export default function SignUp() {
       console.log('User created successfully:', userCredential.user.uid);
       
       router.push('/');
-    } catch (err: any) {
-      console.error('Detailed signup error:', {
-        code: err.code,
-        message: err.message,
-        fullError: err
-      });
-
-      // More specific error messages
-      const errorMessages: { [key: string]: string } = {
-        'auth/email-already-in-use': 'This email is already registered.',
-        'auth/invalid-email': 'Please enter a valid email address.',
-        'auth/operation-not-allowed': 'Email/password accounts are not enabled. Please contact support.',
-        'auth/weak-password': 'Password should be at least 6 characters long.',
-        'auth/network-request-failed': 'Network error. Please check your connection.',
-        'auth/configuration-not-found': 'Firebase configuration error. Please check your setup.',
-        'auth/internal-error': 'An internal error occurred. Please try again.'
-      };
-
-      const errorMessage = errorMessages[err.code] || `Error: ${err.message}`;
-      setError(errorMessage);
-      
-      // Additional debugging for configuration error
-      if (err.code === 'auth/configuration-not-found') {
-        console.log('Current auth configuration:', {
-          authDomain: auth.config.authDomain,
-          apiKey: auth.config.apiKey ? '[EXISTS]' : '[MISSING]'
-        });
-      }
+    } catch (err) {
+      const firebaseError = err as FirebaseError;
+      setError(firebaseError.message || 'Failed to sign up');
+      console.error(err);
     }
   };
 

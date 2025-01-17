@@ -1,7 +1,7 @@
 // src/lib/firebase.ts
-import { initializeApp, getApps } from 'firebase/app';  // Fixed import
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,28 +12,16 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Debug: Log full config values (be careful not to commit this with real values)
-console.log('Detailed Firebase Config:', {
-  apiKey: firebaseConfig.apiKey,
-  authDomain: firebaseConfig.authDomain,
-  projectId: firebaseConfig.projectId,
-  storageBucket: firebaseConfig.storageBucket,
-  messagingSenderId: firebaseConfig.messagingSenderId,
-  appId: firebaseConfig.appId
-});
-
 let app;
-let auth;
-let db;
+let auth: Auth;
+let db: Firestore;
 
 try {
   console.log('Initializing Firebase...');
-  console.log('Number of existing Firebase apps:', getApps().length);
   
-  if (!getApps().length) {
+  if (getApps().length === 0) {
     console.log('Creating new Firebase instance...');
     app = initializeApp(firebaseConfig);
-    console.log('Firebase app initialized:', app.name);
   } else {
     console.log('Using existing Firebase instance...');
     app = getApps()[0];
